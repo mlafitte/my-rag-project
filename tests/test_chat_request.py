@@ -1,59 +1,47 @@
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, AsyncMock
 import pytest
 from chat_request import get_response
 
-# Mock the get_embedding function
-@patch('chat_request.get_embedding')
-# Mock the get_context function
+
+@patch('chat_request._invoke_agent', new_callable=AsyncMock)
+@patch('chat_request.render_prompty')
 @patch('chat_request.get_context')
-# Mock the Prompty class and its load method
-@patch('chat_request.Prompty.load')
-def test_get_response_valid_question(mock_prompty_load, mock_get_context, mock_get_embedding):
-    # Set up the return values for the mocks
+@patch('chat_request.get_embedding')
+def test_get_response_valid_question(mock_get_embedding, mock_get_context, mock_render_prompty, mock_invoke_agent):
     mock_get_embedding.return_value = [0.1, 0.2, 0.3]
     mock_get_context.return_value = ["context1", "context2"]
-    mock_prompty_instance = MagicMock()
-    mock_prompty_instance.return_value = "The moon's size is about 3,474 km in diameter."
-    mock_prompty_load.return_value = mock_prompty_instance
+    mock_render_prompty.return_value = ({}, {"system": "system prompt body"})
+    mock_invoke_agent.return_value = "The moon's size is about 3,474 km in diameter."
 
-    # Call the function with a sample question and chat history
     response = get_response("What is the size of the moon?", [])
 
-    # Assert that the response is as expected
     assert response == {
         "answer": "The moon's size is about 3,474 km in diameter.",
         "context": ["context1", "context2"]
     }
 
-    # Assert that the mocks were called with the correct parameters
     mock_get_embedding.assert_called_once_with("What is the size of the moon?")
     mock_get_context.assert_called_once_with("What is the size of the moon?", [0.1, 0.2, 0.3])
-    mock_prompty_load.assert_called_once()
+    mock_invoke_agent.assert_called_once()
 
-# Mock the get_embedding function
-@patch('chat_request.get_embedding')
-# Mock the get_context function
+
+@patch('chat_request._invoke_agent', new_callable=AsyncMock)
+@patch('chat_request.render_prompty')
 @patch('chat_request.get_context')
-# Mock the Prompty class and its load method
-@patch('chat_request.Prompty.load')
-def test_get_response_empty_question(mock_prompty_load, mock_get_context, mock_get_embedding):
-    # Set up the return values for the mocks
+@patch('chat_request.get_embedding')
+def test_get_response_empty_question(mock_get_embedding, mock_get_context, mock_render_prompty, mock_invoke_agent):
     mock_get_embedding.return_value = [0.1, 0.2, 0.3]
     mock_get_context.return_value = []
-    mock_prompty_instance = MagicMock()
-    mock_prompty_instance.return_value = ""
-    mock_prompty_load.return_value = mock_prompty_instance
+    mock_render_prompty.return_value = ({}, {"system": "system prompt body"})
+    mock_invoke_agent.return_value = ""
 
-    # Call the function with an empty question and chat history
     response = get_response("", [])
 
-    # Assert that the response is as expected
     assert response == {
         "answer": "",
         "context": []
     }
 
-    # Assert that the mocks were called with the correct parameters
     mock_get_embedding.assert_called_once_with("")
     mock_get_context.assert_called_once_with("", [0.1, 0.2, 0.3])
-    mock_prompty_load.assert_called_once()
+    mock_invoke_agent.assert_called_once()

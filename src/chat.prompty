@@ -3,14 +3,15 @@ name: Simple Chat
 description: An AI assistant to help people find their answers.
 authors:
   - Paulo Lacerda
+# NOTE: chat_request.py always uses AZURE_OPENAI_CHAT_DEPLOYMENT / AZURE_OPENAI_API_VERSION
+# from the environment at runtime; the model block below is documentation only.
 model:
   api: chat
   configuration:
     type: azure_openai
-    azure_deployment: gpt-35-turbo
+    azure_deployment: gpt-5
   parameters:
     max_tokens: 128
-    temperature: 0.2
 inputs:
   documents:
     type: object

@@ -28,9 +28,7 @@ jobs:
       AZURE_OPENAI_API_VERSION: ${{steps.config-env.outputs.AZURE_OPENAI_API_VERSION}}
       AZURE_OPENAI_ENDPOINT: ${{steps.config-env.outputs.AZURE_OPENAI_ENDPOINT}}
       AZURE_OPENAI_NAME: ${{steps.config-env.outputs.AZURE_OPENAI_NAME}}
-      PROMPTFLOW_WORKER_NUM: ${{steps.config-env.outputs.PROMPTFLOW_WORKER_NUM}}
-      PROMPTFLOW_SERVING_ENGINE: ${{steps.config-env.outputs.PROMPTFLOW_SERVING_ENGINE}}
-    steps: 
+    steps:
       - uses: actions/checkout@v4   
       - name: Provision qa environment
         uses: ./.github/actions/config-env
@@ -60,8 +58,6 @@ jobs:
           AZURE_SEARCH_ENDPOINT: ${{ vars.AZURE_SEARCH_ENDPOINT }}
           LOAD_AZURE_SEARCH_SAMPLE_DATA: ${{ vars.LOAD_AZURE_SEARCH_SAMPLE_DATA }}
           AZURE_SEARCH_NAME: ${{ vars.AZURE_SEARCH_NAME }}
-          PROMPTFLOW_SERVING_ENGINE: ${{ vars.PROMPTFLOW_SERVING_ENGINE }}
-          PROMPTFLOW_WORKER_NUM: ${{ vars.PROMPTFLOW_WORKER_NUM }}
           AZURE_PRINCIPAL_ID: ${{ vars.AZURE_PRINCIPAL_ID }}
           AZUREAI_HUB_NAME: ${{ vars.AZUREAI_HUB_NAME }}
           AZURE_APP_INSIGHTS_NAME: ${{ vars.AZURE_APP_INSIGHTS_NAME }}
@@ -109,8 +105,6 @@ jobs:
           AZURE_OPENAI_CHAT_DEPLOYMENT: ${{needs.setup-env-job.outputs.AZURE_OPENAI_CHAT_DEPLOYMENT}}
           AZURE_OPENAI_EMBEDDING_DEPLOYMENT: ${{needs.setup-env-job.outputs.AZURE_OPENAI_EMBEDDING_DEPLOYMENT}}
           AZURE_OPENAI_EMBEDDING_MODEL: ${{needs.setup-env-job.outputs.AZURE_OPENAI_EMBEDDING_MODEL}}
-          PROMPTFLOW_WORKER_NUM: ${{needs.setup-env-job.outputs.PROMPTFLOW_WORKER_NUM}}
-          PROMPTFLOW_SERVING_ENGINE: ${{needs.setup-env-job.outputs.PROMPTFLOW_SERVING_ENGINE}}
           AZURE_APP_SERVICE_NAME: ${{needs.setup-env-job.outputs.AZURE_APP_SERVICE_NAME}}
           AZURE_APP_SERVICE_PLAN_NAME: ${{needs.setup-env-job.outputs.AZURE_APP_SERVICE_PLAN_NAME}}      
         run: |
@@ -168,8 +162,6 @@ jobs:
           AZURE_OPENAI_CHAT_DEPLOYMENT: ${{needs.setup-env-job.outputs.AZURE_OPENAI_CHAT_DEPLOYMENT}}
           AZURE_OPENAI_EMBEDDING_DEPLOYMENT: ${{needs.setup-env-job.outputs.AZURE_OPENAI_EMBEDDING_DEPLOYMENT}}
           AZURE_OPENAI_EMBEDDING_MODEL: ${{needs.setup-env-job.outputs.AZURE_OPENAI_EMBEDDING_MODEL}}
-          PROMPTFLOW_WORKER_NUM: ${{needs.setup-env-job.outputs.PROMPTFLOW_WORKER_NUM}}
-          PROMPTFLOW_SERVING_ENGINE: ${{needs.setup-env-job.outputs.PROMPTFLOW_SERVING_ENGINE}}
           AZURE_APP_SERVICE_NAME: ${{needs.setup-env-job.outputs.AZURE_APP_SERVICE_NAME}}
           AZURE_APP_SERVICE_PLAN_NAME: ${{needs.setup-env-job.outputs.AZURE_APP_SERVICE_PLAN_NAME}}
           PREFIX: ${{ github.sha }}
@@ -303,44 +295,15 @@ jobs:
 
       ## Bug fix in release branch: needs to build a new image
 
-      - name: Setup Python 
-        if: steps.check_image.outputs.IMAGE_EXISTS == 'false'      
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.8
-
-      - name: Install Promptflow CLI
-        if: steps.check_image.outputs.IMAGE_EXISTS == 'false'
-        run: |
-            python -m pip install --upgrade pip
-            pip install promptflow --upgrade
-            pf --version  
-
-      - name: Install required dependencies
-        if: steps.check_image.outputs.IMAGE_EXISTS == 'false'
-        run: | 
-          pip cache purge
-          pip install --upgrade pip setuptools
-          pip install -r src/requirements.txt
-
-      - name: Create flow docker files
-        if: steps.check_image.outputs.IMAGE_EXISTS == 'false'
-        run: |
-              # reference: https://github.com/microsoft/promptflow/tree/main/examples/tutorials/flow-deploy/azure-app-service
-              pf flow build --source src --output dist --format docker       
-
       - name: Build and push image
         if: steps.check_image.outputs.IMAGE_EXISTS == 'false'
         env:
           AZURE_CONTAINER_REGISTRY_NAME: ${{needs.setup-env-job.outputs.AZURE_CONTAINER_REGISTRY_NAME}}
-          AZURE_CONTAINER_REPOSITORY_NAME: ${{needs.setup-env-job.outputs.AZURE_CONTAINER_REPOSITORY_NAME}}          
+          AZURE_CONTAINER_REPOSITORY_NAME: ${{needs.setup-env-job.outputs.AZURE_CONTAINER_REPOSITORY_NAME}}
         run: |
             echo "✅ Building docker image..."
-            path=dist
             image_tag=$AZURE_CONTAINER_REPOSITORY_NAME:$RELEASE_VERSION-${{ github.sha }}
-            echo "Change working directory to $path"
-            cd "$path"
-            docker build -t "$image_tag"  .             
+            docker build -t "$image_tag" -f Dockerfile .
 
             full_registry_name="$AZURE_CONTAINER_REGISTRY_NAME.azurecr.io"
             echo "✅ Trying to login to $full_registry_name..."
@@ -442,7 +405,7 @@ jobs:
           if [ -z "$app_exists" ]; then
             # Create app
             echo "🔶 | Creating $name app..."
-            command="az webapp create --name $name -p $service_plan_name --deployment-container-image-name $acr_image_tag --startup-file 'bash start.sh' -g $resource_group"
+            command="az webapp create --name $name -p $service_plan_name --deployment-container-image-name $acr_image_tag -g $resource_group"
             command=$(append_to_command "$command")
             echo "$command"
             eval "$command"
@@ -465,7 +428,7 @@ jobs:
           # Config environment variables
           echo "🔶 | Config  app $name env variables ..." 
           # Port default to 8080 corresponding to the DockerFile
-          command="az webapp config appsettings set -g $resource_group --name $name --settings USER_AGENT=promptflow-appservice WEBSITES_PORT=8080"
+          command="az webapp config appsettings set -g $resource_group --name $name --settings WEBSITES_PORT=8080"
           command=$(append_to_command "$command")
           echo "$command"
           eval "$command"

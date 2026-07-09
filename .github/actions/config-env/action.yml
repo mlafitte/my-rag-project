@@ -88,10 +88,8 @@ runs:
           "AZURE_RESOURCE_GROUP"
           "AZURE_SEARCH_ENDPOINT" 
           "LOAD_AZURE_SEARCH_SAMPLE_DATA"
-          "AZURE_SEARCH_NAME" 
-          "AZURE_STORAGE_ACCOUNT_NAME" 
-          "PROMPTFLOW_SERVING_ENGINE" 
-          "PROMPTFLOW_WORKER_NUM"
+          "AZURE_SEARCH_NAME"
+          "AZURE_STORAGE_ACCOUNT_NAME"
         )
 
         manual_environment=${{ inputs.MANUAL_PROVISIONING || 'false' }}
@@ -286,9 +284,3 @@ outputs:
   AZURE_SUBSCRIPTION_ID:
     description: 'Azure subscription ID'
     value: ${{ steps.setup-env-step.outputs.AZURE_SUBSCRIPTION_ID }}
-  PROMPTFLOW_SERVING_ENGINE:
-    description: 'Promptflow Serving Engine'
-    value: ${{ steps.setup-env-step.outputs.PROMPTFLOW_SERVING_ENGINE }}
-  PROMPTFLOW_WORKER_NUM:
-    description: 'Promptflow Worker Number'
-    value: ${{ steps.setup-env-step.outputs.PROMPTFLOW_WORKER_NUM }}

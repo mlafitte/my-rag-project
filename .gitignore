@@ -1,7 +1,5 @@
 local/
-dist/
 .env
-.promptflow/
 *.xlsx
 junit/
 responses.jsonl

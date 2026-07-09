@@ -38,8 +38,10 @@ var _deployAppService = deployAppService
 
 // Azure OpenAI parameters
 
-param oaiApiVersion string = '2023-05-15'
-param oaiChatDeployment string = 'gpt-35-turbo'
+// 2025-04-01-preview is the first stable Azure OpenAI api-version with GPT-5-series chat completions support.
+param oaiApiVersion string = '2025-04-01-preview'
+// Placeholder deployment name - set to whatever GPT-5-class chat model your subscription/region can deploy.
+param oaiChatDeployment string = 'gpt-5'
 param oaiEmbeddingDeployment string = 'text-embedding-ada-002'
 param oaiEmbeddingModel string = 'text-embedding-ada-002'
 
@@ -51,14 +53,6 @@ var _azureSearchIndexSampleData = !empty(azureSearchIndexSampleData) ? azureSear
 param principalId string = ''
 param principalType string = 'ServicePrincipal'
 
-// Flow parameters
-
-param promptFlowWorkerNum string = ''
-var _promptFlowWorkerNum = !empty(promptFlowWorkerNum) ? promptFlowWorkerNum : '1'
-
-param promptFlowServingEngine string = ''
-var _promptFlowServingEngine = !empty(promptFlowServingEngine) ? promptFlowServingEngine : 'fastapi'
- 
 var _resourceToken = toLower(uniqueString(subscription().id, environmentName, location, deploymentTimestamp))
 var _keyVaultName = !empty(keyVaultName) ? keyVaultName : '${_abbrs.keyVaultVaults}${_resourceToken}'
 
@@ -119,9 +113,7 @@ module appService  'core/host/appservice.bicep'  = if (_deployAppService) {
     appSettings: { 
       WEBSITES_ENABLE_APP_SERVICE_STORAGE: false
       DOCKER_REGISTRY_SERVER_URL: _deployAppService?'https://${ai.outputs.containerRegistryName}.azurecr.io':''
-      WEBSITES_PORT: '80'  
-      PROMPTFLOW_WORKER_NUM: _promptFlowWorkerNum
-      PROMPTFLOW_SERVING_ENGINE: _promptFlowServingEngine
+      WEBSITES_PORT: '8080'
       AZURE_OPENAI_ENDPOINT: _deployAppService?ai.outputs.openAiEndpoint:''
       AZURE_OPENAI_CHAT_DEPLOYMENT: oaiChatDeployment
       AZURE_OPENAI_EMBEDDING_DEPLOYMENT: oaiEmbeddingDeployment
@@ -280,6 +272,4 @@ output AZURE_OPENAI_NAME string = ai.outputs.openAiName
 output AZURE_SEARCH_NAME string = ai.outputs.searchName
 output AZURE_STORAGE_ACCOUNT_NAME string = ai.outputs.storageAccountName
 
-output PROMPTFLOW_WORKER_NUM string = _promptFlowWorkerNum
-output PROMPTFLOW_SERVING_ENGINE string = _promptFlowServingEngine
 output LOAD_AZURE_SEARCH_SAMPLE_DATA string = _azureSearchIndexSampleData
