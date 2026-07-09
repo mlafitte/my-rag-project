@@ -3,10 +3,13 @@ import json
 from datetime import datetime
 
 from azure.identity import DefaultAzureCredential
-from promptflow.client import PFClient
-from promptflow.core import AzureOpenAIModelConfiguration
-from promptflow.evals.evaluate import evaluate
-from promptflow.evals.evaluators import RelevanceEvaluator, FluencyEvaluator, GroundednessEvaluator, CoherenceEvaluator
+from azure.ai.evaluation import AzureOpenAIModelConfiguration
+from azure.ai.evaluation import evaluate, RelevanceEvaluator, FluencyEvaluator, GroundednessEvaluator, CoherenceEvaluator
+
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+from chat_request import get_response
+
 
 def main():
 
@@ -15,63 +18,54 @@ def main():
     azure_subscription_id = os.getenv("AZURE_SUBSCRIPTION_ID")
     azure_resource_group = os.getenv("AZURE_RESOURCE_GROUP")
     azure_project_name = os.getenv("AZUREAI_PROJECT_NAME")
-    prefix = os.getenv("PREFIX", datetime.now().strftime("%y%m%d%H%M%S"))[:14] 
+    prefix = os.getenv("PREFIX", datetime.now().strftime("%y%m%d%H%M%S"))[:14]
 
     print("AZURE_LOCATION =", azure_location)
     print("AZURE_SUBSCRIPTION_ID =", azure_subscription_id)
     print("AZURE_RESOURCE_GROUP =", azure_resource_group)
     print("AZUREAI_PROJECT_NAME=", azure_project_name)
-    print("PREFIX =", prefix)    
+    print("PREFIX =", prefix)
 
     ##################################
     ## Base Run
     ##################################
 
-    pf = PFClient()
-    flow = "./src"  # path to the flow
-    data = "./evaluations/test-dataset.jsonl"  # path to the data file
+    data_path = "./evaluations/test-dataset.jsonl"
+    with open(data_path, "r") as f:
+        rows = [json.loads(line) for line in f]
 
-    # base run
-    base_run = pf.run(
-        flow=flow,
-        data=data,
-        column_mapping={
-            "question": "${data.question}",
-            "chat_history": []
-        },
-        stream=True,
-    )
-    
-    responses = pf.get_details(base_run)
-    print(responses.head(10))
+    data_list = []
+    for row in rows:
+        result = get_response(row["question"], [])
+        data_list.append({
+            "question": row["question"],
+            "chat_history": [],
+            "answer": result["answer"],
+            "context": result["context"],
+        })
 
-    # Convert to jsonl
-    relevant_columns = responses[['inputs.question', 'inputs.chat_history', 'outputs.answer', 'outputs.context']]
-    relevant_columns.columns = ['question', 'chat_history', 'answer', 'context']
-    data_list = relevant_columns.to_dict(orient='records')
     with open('responses.jsonl', 'w') as f:
         for item in data_list:
-            f.write(json.dumps(item) + '\n')    
+            f.write(json.dumps(item) + '\n')
 
     ##################################
     ## Evaluation
     ##################################
 
-    # Initialize Azure OpenAI Connection with your environment variables
     model_config = AzureOpenAIModelConfiguration(
         azure_endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT"),
         api_key=os.environ.get("AZURE_OPENAI_API_KEY"),
         azure_deployment=os.environ.get("AZURE_OPENAI_DEPLOYMENT"),
         api_version=os.environ.get("AZURE_OPENAI_API_VERSION"),
     )
-    
+
     azure_ai_project = {
         "subscription_id": os.getenv("AZURE_SUBSCRIPTION_ID"),
         "resource_group_name": os.getenv("AZURE_RESOURCE_GROUP"),
         "project_name": os.getenv("AZUREAI_PROJECT_NAME"),
-    }    
+    }
 
-    # https://learn.microsoft.com/en-us/azure/ai-studio/how-to/develop/flow-evaluate-sdk
+    # https://learn.microsoft.com/en-us/azure/ai-foundry/how-to/develop/evaluate-sdk
     fluency_evaluator = FluencyEvaluator(model_config=model_config)
     groundedness_evaluator = GroundednessEvaluator(model_config=model_config)
     relevance_evaluator = RelevanceEvaluator(model_config=model_config)
@@ -104,8 +98,7 @@ def main():
                 "Coherence": coherence_evaluator
             },
             output_path="./qa_flow_quality_eval.json"
-        )        
+        )
 
 if __name__ == '__main__':
-    import promptflow as pf
     main()

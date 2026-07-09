@@ -1,12 +1,15 @@
-Here is the updated README:
+# RAG with Azure AI and Microsoft Agent Framework
 
----
+## Migration off Prompt Flow
 
-# RAG with Azure AI Studio and Promptflow
-
-We are excited to announce that this repository has been rebranded and moved to a new location. Please visit our new home at [https://github.com/azure/genaiops-project-template](https://github.com/azure/genaiops-project-template) to find the latest project template, resources, and documentation for GenAIOps. We kindly ask you to update your bookmarks and continue your work with GenAIOps at the new location.
-
-Thank you for your understanding and continued support!
+Prompt Flow is being retired by Microsoft (feature-frozen April 2026, fully retired April
+2027) and its Chat Completions-era LLM connector does not speak the request format required
+by GPT-5-class deployments. This branch replaces the Prompt Flow flow under `src/` with a
+plain Python implementation on [Microsoft Agent Framework](https://github.com/microsoft/agent-framework),
+still driven by the same `chat.prompty` template. See `src/chat_request.py`, `src/app.py`,
+and the root `Dockerfile` for the new implementation, and `infra/ai.yaml` /
+`infra/main.bicep` for the (placeholder) GPT-5-class model deployment - update those to a
+model/version your subscription can actually deploy before running `azd provision`.
 
 ## Contributing
 

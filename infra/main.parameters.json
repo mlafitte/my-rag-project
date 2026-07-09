@@ -61,12 +61,6 @@
     },
     "azureSearchIndexSampleData": {
       "value": "${LOAD_AZURE_SEARCH_SAMPLE_DATA}"
-    },
-    "promptFlowWorkerNum": {
-      "value": "${PROMPTFLOW_WORKER_NUM}"
-    },
-    "promptFlowServingEngine": {
-      "value": "${PROMPTFLOW_SERVING_ENGINE}"
     }
   }
 }

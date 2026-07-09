@@ -2,11 +2,14 @@
 
 The table below shows the utilization for each environment created using the Bicep templates from this repository.
 
-| Deployment Name          | Model Name             | Model Version | SKU Name | Capacity |
-|--------------------------|------------------------|---------------|----------|----------|
-| gpt-35-turbo             | gpt-35-turbo           | 0613          | Standard | 20       |
-| gpt-4                    | gpt-4o                 | 2024-05-13    | Standard | 20       |
-| text-embedding-ada-002   | text-embedding-ada-002 | 2             | Standard | 20       |
+| Deployment Name          | Model Name             | Model Version | SKU Name       | Capacity |
+|--------------------------|------------------------|---------------|----------------|----------|
+| gpt-5-chat               | gpt-5-chat             | (verify)      | GlobalStandard | 20       |
+| text-embedding-ada-002   | text-embedding-ada-002 | 2             | Standard       | 20       |
+
+> The `gpt-5-chat` name/version above is a placeholder - confirm the exact model name,
+> version, and SKU your subscription/region can deploy (`az cognitiveservices account
+> list-models`) and keep `infra/ai.yaml` / `infra/main.bicep` in sync with it.
 
 Use the commands below to check the availability and quota of Azure OpenAI models in a specific region. If the region you want to use does not have availability, you can choose another region. If you don't have enough quota, you can adjust your quota settings or request more quota. 
 
@@ -19,9 +22,8 @@ $subscriptionId = "replace by your subscription id"
 $region = "replace by the desired region" 
 $results = az cognitiveservices usage list --subscription $subscriptionId --location $region 
 $results | ConvertFrom-Json | Where-Object { 
-    $_.name.value -match 'OpenAI.Standard.gpt-4o' -or 
-    $_.name.value -match 'OpenAI.Standard.text-embedding-ada-002' -or 
-    $_.name.value -match 'Standard.gpt-35-turbo' 
+    $_.name.value -match 'OpenAI.GlobalStandard.gpt-5-chat' -or 
+    $_.name.value -match 'OpenAI.Standard.text-embedding-ada-002' 
 } | Select-Object *
 ```
 
@@ -31,9 +33,8 @@ $results | ConvertFrom-Json | Where-Object {
 subscriptionId="replace by your subscription id" 
 region="replace by the desired region"
 results=$(az cognitiveservices usage list --subscription $subscriptionId --location $region) 
-echo $results | jq -r '.[] | select(.name.value | test("Standard.gpt-4"))'
+echo $results | jq -r '.[] | select(.name.value | test("GlobalStandard.gpt-5"))'
 echo $results | jq -r '.[] | select(.name.value | test("OpenAI.Standard.text-embedding-ada-002"))'
-echo $results | jq -r '.[] | select(.name.value | test("Standard.gpt-35-turbo"))' 
 ```
 
 Example of verification in EastUS with Powershell:

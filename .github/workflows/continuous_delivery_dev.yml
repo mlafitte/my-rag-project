@@ -50,8 +50,6 @@ jobs:
           AZURE_SEARCH_ENDPOINT: ${{ vars.AZURE_SEARCH_ENDPOINT }}
           LOAD_AZURE_SEARCH_SAMPLE_DATA: "false" # It's already populated during PR
           AZURE_SEARCH_NAME: ${{ vars.AZURE_SEARCH_NAME }}
-          PROMPTFLOW_SERVING_ENGINE: ${{ vars.PROMPTFLOW_SERVING_ENGINE }}
-          PROMPTFLOW_WORKER_NUM: ${{ vars.PROMPTFLOW_WORKER_NUM }}
           AZURE_PRINCIPAL_ID: ${{ vars.AZURE_PRINCIPAL_ID }}
           AZUREAI_HUB_NAME: ${{ vars.AZUREAI_HUB_NAME }}
           AZURE_APP_INSIGHTS_NAME: ${{ vars.AZURE_APP_INSIGHTS_NAME }}
@@ -151,7 +149,7 @@ jobs:
           if [ -z "$app_exists" ]; then
             # Create app
             echo "🔶 | Creating $name app..."
-            command="az webapp create --name $name -p $service_plan_name --deployment-container-image-name $acr_image_tag --startup-file 'bash start.sh' -g $resource_group"
+            command="az webapp create --name $name -p $service_plan_name --deployment-container-image-name $acr_image_tag -g $resource_group"
             command=$(append_to_command "$command")
             echo "$command"
             eval "$command"
@@ -174,7 +172,7 @@ jobs:
           # Config environment variables
           echo "🔶 | Config  app $name env variables ..." 
           # Port default to 8080 corresponding to the DockerFile
-          command="az webapp config appsettings set -g $resource_group --name $name --settings USER_AGENT=promptflow-appservice WEBSITES_PORT=8080"
+          command="az webapp config appsettings set -g $resource_group --name $name --settings WEBSITES_PORT=8080"
           command=$(append_to_command "$command")
           echo "$command"
           eval "$command"
