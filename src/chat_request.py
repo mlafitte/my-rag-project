@@ -9,7 +9,7 @@ import yaml
 from jinja2 import Template
 from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 from openai import AzureOpenAI
-from agent_framework.openai import OpenAIChatCompletionClient
+from agent_framework.openai import OpenAIChatClient
 
 from ai_search import retrieve_documentation
 
@@ -61,7 +61,9 @@ def render_prompty(path=PROMPTY_PATH, **template_vars):
 
 
 async def _invoke_agent(instructions: str, question: str, max_tokens: int) -> str:
-    client = OpenAIChatCompletionClient(
+    # Responses API client - required for gpt-5-class reasoning deployments, which on
+    # Azure OpenAI are not guaranteed to be reachable through the Chat Completions API.
+    client = OpenAIChatClient(
         model=os.getenv("AZURE_OPENAI_CHAT_DEPLOYMENT", ""),
         azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT", ""),
         api_version=os.getenv("AZURE_OPENAI_API_VERSION", ""),

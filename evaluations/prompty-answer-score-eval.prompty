@@ -7,7 +7,7 @@ model:
   api: chat
   configuration:
     type: azure_openai
-    azure_deployment: gpt-5-chat
+    azure_deployment: gpt-5
     api_key: ${env:AZURE_OPENAI_API_KEY}
     azure_endpoint: ${env:AZURE_OPENAI_ENDPOINT}
   parameters:

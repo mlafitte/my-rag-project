@@ -5,10 +5,10 @@
 # subscription+region can actually deploy (check with:
 # az cognitiveservices account list-models --name <aoai-resource> -g <rg> ).
 deployments:
-  - name: gpt-5-chat
+  - name: gpt-5
     model:
       format: OpenAI
-      name: gpt-5-chat
+      name: gpt-5
       version: "2025-08-07"
     sku:
       name: GlobalStandard

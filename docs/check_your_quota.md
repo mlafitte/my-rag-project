@@ -4,10 +4,10 @@ The table below shows the utilization for each environment created using the Bic
 
 | Deployment Name          | Model Name             | Model Version | SKU Name       | Capacity |
 |--------------------------|------------------------|---------------|----------------|----------|
-| gpt-5-chat               | gpt-5-chat             | (verify)      | GlobalStandard | 20       |
+| gpt-5                    | gpt-5                  | (verify)      | GlobalStandard | 20       |
 | text-embedding-ada-002   | text-embedding-ada-002 | 2             | Standard       | 20       |
 
-> The `gpt-5-chat` name/version above is a placeholder - confirm the exact model name,
+> The `gpt-5` name/version above is a placeholder - confirm the exact model name,
 > version, and SKU your subscription/region can deploy (`az cognitiveservices account
 > list-models`) and keep `infra/ai.yaml` / `infra/main.bicep` in sync with it.
 
@@ -22,7 +22,7 @@ $subscriptionId = "replace by your subscription id"
 $region = "replace by the desired region" 
 $results = az cognitiveservices usage list --subscription $subscriptionId --location $region 
 $results | ConvertFrom-Json | Where-Object { 
-    $_.name.value -match 'OpenAI.GlobalStandard.gpt-5-chat' -or 
+    $_.name.value -match 'OpenAI.GlobalStandard.gpt-5' -or 
     $_.name.value -match 'OpenAI.Standard.text-embedding-ada-002' 
 } | Select-Object *
 ```

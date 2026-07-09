@@ -9,7 +9,7 @@ model:
   api: chat
   configuration:
     type: azure_openai
-    azure_deployment: gpt-5-chat
+    azure_deployment: gpt-5
   parameters:
     max_tokens: 128
 inputs:
