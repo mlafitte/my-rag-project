@@ -63,10 +63,12 @@ def render_prompty(path=PROMPTY_PATH, **template_vars):
 async def _invoke_agent(instructions: str, question: str, max_tokens: int) -> str:
     # Responses API client - required for gpt-5-class reasoning deployments, which on
     # Azure OpenAI are not guaranteed to be reachable through the Chat Completions API.
+    # api_version is omitted on purpose: this client targets {endpoint}/openai/v1/,
+    # which rejects dated api-versions. AZURE_OPENAI_API_VERSION stays dated because
+    # get_embedding() and the evaluators still call the older /deployments/ path.
     client = OpenAIChatClient(
         model=os.getenv("AZURE_OPENAI_CHAT_DEPLOYMENT", ""),
         azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT", ""),
-        api_version=os.getenv("AZURE_OPENAI_API_VERSION", ""),
         credential=DefaultAzureCredential(),
     )
     agent = client.as_agent(

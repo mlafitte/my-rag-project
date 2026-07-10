@@ -38,10 +38,10 @@ var _deployAppService = deployAppService
 
 // Azure OpenAI parameters
 
-// 2025-04-01-preview is the first stable Azure OpenAI api-version with GPT-5-series chat completions support.
+// Consumed by the embedding client and the evaluators, which call the /deployments/ path.
+// The chat agent deliberately sends no api-version - see src/chat_request.py.
 param oaiApiVersion string = '2025-04-01-preview'
-// Placeholder deployment name - set to whatever GPT-5-class chat model your subscription/region can deploy.
-param oaiChatDeployment string = 'gpt-5'
+param oaiChatDeployment string = 'gpt-5.2'
 param oaiEmbeddingDeployment string = 'text-embedding-ada-002'
 param oaiEmbeddingModel string = 'text-embedding-ada-002'
 

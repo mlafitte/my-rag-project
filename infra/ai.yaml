@@ -1,15 +1,14 @@
 # yaml-language-server: $schema=ai.yaml.json
 
-# PLACEHOLDER: "name"/"version" below are not verified against a real subscription.
-# Before running azd provision, replace with a GPT-5-class chat model/version your
-# subscription+region can actually deploy (check with:
-# az cognitiveservices account list-models --name <aoai-resource> -g <rg> ).
+# gpt-5.2 is the same chat model the earlier labs use, so the workshop only ever
+# consumes one chat-model quota per region. Check availability before changing it:
+# az cognitiveservices account list-models --name <aoai-resource> -g <rg>
 deployments:
-  - name: gpt-5
+  - name: gpt-5.2
     model:
       format: OpenAI
-      name: gpt-5
-      version: "2025-08-07"
+      name: gpt-5.2
+      version: "2025-12-11"
     sku:
       name: GlobalStandard
       capacity: 20
